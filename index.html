@@ -3,7 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D-печать на заказ — детали, запчасти и фигурки</title>
+  <title>3D-печать на заказ в Санкт-Петербурге — детали, запчасти и фигурки</title>
+  <meta name="description" content="Быстрая 3D-печать на заказ в Санкт-Петербурге: детали, запчасти, фигурки и прототипы из PETG, ABS и нейлона PA6. Поштучно и мелкими партиями, 3D-моделирование по образцу." />
+  <meta name="keywords" content="3D печать на заказ Санкт-Петербург, 3д печать СПб, печать деталей на 3д принтере, 3d моделирование, PETG, ABS, нейлон PA6" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph для красивых превью в Telegram, VK и мессенджерах -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:title" content="3D-печать на заказ в Санкт-Петербурге — быстро и аккуратно" />
+  <meta property="og:description" content="Детали, запчасти, фигурки и мелкие партии из PETG, ABS и нейлона PA6. Поможем с 3D-моделированием и подбором пластика." />
+
+  <!-- Микроразметка Schema.org для поисковиков (Яндекс и Google) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "3D-печать и 3D-моделирование на заказ в Санкт-Петербурге",
+    "serviceType": "3D-печать (FDM)",
+    "description": "Печать деталей, запчастей, фигурок и мелких партий из PETG, ABS и инженерного нейлона PA6 в Санкт-Петербурге.",
+    "areaServed": {
+      "@type": "City",
+      "name": "Санкт-Петербург"
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Услуги 3D-печати",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3D-печать пластиком PETG" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3D-печать ударопрочным пластиком ABS" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3D-печать инженерным нейлоном PA6" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "3D-моделирование детали по образцу или эскизу" } }
+      ]
+    }
+  }
+  </script>
   <style>
 *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e2e8f0; }
 html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -611,6 +645,7 @@ a { color: inherit; text-decoration: inherit; }
 
       <div class="lg:col-span-7">
         <form id="order-form" class="rounded-2xl bg-white p-6 text-slate-900 shadow-xl sm:p-8">
+          <input type="checkbox" name="botcheck" class="hidden" style="display: none;" />
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
               <label for="client-name" class="block text-sm font-medium text-slate-700">Ваше имя</label>
@@ -644,14 +679,13 @@ a { color: inherit; text-decoration: inherit; }
           </div>
 
           <div class="mt-4">
-            <label for="order-file" class="block text-sm font-medium text-slate-700">Файл или фото (необязательно)</label>
-            <input id="order-file" type="file" class="mt-1.5 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3.5 file:py-2 file:text-sm file:font-semibold file:text-slate-700 hover:file:bg-slate-200" />
-            <p id="file-hint" class="mt-1 hidden text-xs text-orange-700"></p>
+            <label for="order-file-link" class="block text-sm font-medium text-slate-700">Ссылка на 3D-модель или фото (необязательно)</label>
+            <input id="order-file-link" name="order_file_link" type="text" placeholder="Яндекс Диск, Google Drive или Облако Mail.ru" class="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20" />
           </div>
 
           <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <button type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-orange-600 px-6 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-orange-700 transition-colors sm:w-auto">
-              Отправить заявку на почту
+            <button id="submit-btn" type="submit" class="inline-flex w-full items-center justify-center rounded-xl bg-orange-600 px-6 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-orange-700 transition-colors sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed">
+              Отправить заявку
             </button>
             <button id="copy-btn" type="button" class="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors sm:w-auto">
               Скопировать текст заявки
@@ -786,37 +820,43 @@ a { color: inherit; text-decoration: inherit; }
       });
     });
 
-    // Подсказка по выбранному файлу
-    const fileInput = document.getElementById('order-file');
-    const fileHint = document.getElementById('file-hint');
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files && fileInput.files.length > 0) {
-        fileHint.textContent = `Выбран файл «${fileInput.files[0].name}». Не забудьте прикрепить его в открывшемся письме.`;
-        fileHint.classList.remove('hidden');
-      } else {
-        fileHint.classList.add('hidden');
-      }
-    });
+    // ============================================================
+    // НАСТРОЙКА WEB3FORMS (нужен всего один ключ)
+    // Получить бесплатно за 30 секунд: https://web3forms.com/
+    // ============================================================
+    const WEB3FORMS_ACCESS_KEY = 'fc6090be-5c6b-4767-9817-d3d6a107288d';
 
-    // Сборка текста письма
-    function buildEmailContent() {
+    // Сборка данных заявки
+    function getFormData() {
       const name = document.getElementById('client-name').value.trim();
       const contact = document.getElementById('client-contact').value.trim();
       const type = document.getElementById('order-type').value;
       const deadline = document.getElementById('order-deadline').value.trim() || 'Не указан';
       const details = document.getElementById('order-details').value.trim();
-      const fileName = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : 'Без файла';
+      const fileLink = document.getElementById('order-file-link').value.trim() || 'Не приложена';
 
-      const subject = `Заявка на 3D-печать: ${type} (${name || 'Клиент'})`;
+      return {
+        client_name: name,
+        client_contact: contact,
+        order_type: type,
+        order_deadline: deadline,
+        order_details: details,
+        order_file_link: fileLink
+      };
+    }
+
+    function buildEmailContent() {
+      const d = getFormData();
+      const subject = `Заявка на 3D-печать: ${d.order_type} (${d.client_name || 'Клиент'})`;
       const body = [
-        `Имя: ${name}`,
-        `Контакт для связи: ${contact}`,
-        `Тип заказа: ${type}`,
-        `Желаемый срок: ${deadline}`,
-        `Файл/фото: ${fileName}`,
+        `Имя: ${d.client_name}`,
+        `Контакт для связи: ${d.client_contact}`,
+        `Тип заказа: ${d.order_type}`,
+        `Желаемый срок: ${d.order_deadline}`,
+        `Ссылка на файл/фото: ${d.order_file_link}`,
         '',
         'Описание задачи:',
-        details
+        d.order_details
       ].join('\n');
 
       return { subject, body };
@@ -831,12 +871,56 @@ a { color: inherit; text-decoration: inherit; }
     }
 
     const orderForm = document.getElementById('order-form');
-    orderForm.addEventListener('submit', (e) => {
+    const submitBtn = document.getElementById('submit-btn');
+
+    orderForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const { subject, body } = buildEmailContent();
-      const mailtoUrl = `mailto:belka0107@ya.ru?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailtoUrl;
-      showStatus('Открываем ваш почтовый клиент с готовым письмом. Если письмо не открылось автоматически, нажмите «Скопировать текст заявки».', true);
+
+      if (WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY') {
+        showStatus('Форма ещё не настроена: вставьте свой ключ Web3Forms в код страницы (или нажмите «Скопировать текст заявки»).', false);
+        return;
+      }
+
+      const d = getFormData();
+      const payload = {
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: `Заявка на 3D-печать: ${d.order_type} (${d.client_name || 'Клиент'})`,
+        from_name: d.client_name || 'Сайт 3D-печати',
+        Имя: d.client_name,
+        Контакт: d.client_contact,
+        Тип_заказа: d.order_type,
+        Желаемый_срок: d.order_deadline,
+        Ссылка_на_файл: d.order_file_link,
+        Описание_задачи: d.order_details
+      };
+
+      const prevText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка...';
+
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          showStatus('Заявка отправлена! Я свяжусь с вами в ближайшее время.', true);
+          orderForm.reset();
+        } else {
+          throw new Error(result.message || 'Submit failed');
+        }
+      } catch (err) {
+        console.error('Web3Forms error:', err);
+        showStatus('Не удалось отправить заявку. Пожалуйста, нажмите «Скопировать текст заявки» и отправьте удобным способом.', false);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = prevText;
+      }
     });
 
     document.getElementById('copy-btn').addEventListener('click', async () => {
@@ -857,7 +941,7 @@ a { color: inherit; text-decoration: inherit; }
     });
 
     // Аналитика: Яндекс.Метрика (укажите ваш числовой ID вместо null) + локальный счётчик
-    const METRIKA_ID = null;
+    const METRIKA_ID = '114273325';
 
     if (METRIKA_ID) {
       (function(m, e, t, r, i, k, a) {
